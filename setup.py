@@ -1,0 +1,10 @@
+from setuptools import setup, find_packages
+setup(
+    name='final_project',
+    version='0.1.0',
+    packages=find_packages(),
+    author="Bipana pariyar",
+    email ="bipanapariyar04@gmail.com",
+    install_requires=[]
+        
+)
