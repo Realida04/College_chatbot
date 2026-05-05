@@ -1,21 +1,7 @@
-from flask import Flask, app, jsonify, render_template, request
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter  
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.schema import Document
-from typing import List
-from langchain.embeddings import HuggingFaceEmbeddings, HuggingFaceEmbeddings
-from torch import embedding
-from src.helper import load_pdf_files, filter_to_minimal_docs, text_split, embedding  
-from langchain_openai import ChatOpenAI
-from langchain_pinecone import PineconeVectorStore
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain 
-from dotenv import load_dotenv
-from langchain_core.prompts import ChatPromptTemplate
-import os
-from src.prompt import *
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
+
+from store_index import rag_chain
 
 app = Flask(__name__)
 CORS(app)
@@ -26,9 +12,23 @@ def index():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-    message = data.get("message")
-    return jsonify({"response": message})
+    try:
+        data = request.get_json()
+        message = data.get("message")
+
+        completion = rag_chain.invoke({"input": message})
+
+        print("DEBUG:", completion)
+
+        # Safe extraction
+        reply = completion.get("answer") or completion.get("result") or str(completion)
+
+        return jsonify({"response": reply})
+
+    except Exception as e:
+        print("ERROR:", str(e))
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
