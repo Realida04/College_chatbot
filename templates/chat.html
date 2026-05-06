@@ -11,8 +11,9 @@
   <div class="chat-container">
     
     <div class="chat-header">
-      <h2>College Chatbot 🤖</h2>
-      <p>Ask anything about admissions, courses, or campus life</p>
+      <h2>Aryan College Chatbot 🤖</h2>
+      <p>I can make mistake !</p>
+      <p></p>
     </div>
 
     <div class="chat-box" id="chat-box">
@@ -21,12 +22,35 @@
 
     <div class="chat-input">
       <input type="text" id="user-input" placeholder="Type your message...">
-      <button onclick="sendMessage()">Send</button>
+      <button onClick = "voiceInput()" class="voice"><img src="{{ url_for('static', filename='mike.png') }}" alt="mic" height="25x" width="25px"></button>
+      <button onclick="sendMessage()" class="send">Send</button>
+      
     </div>
 
   </div>
 
   <script>
+
+    function voiceInput() {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'en-US';
+
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    const transcript = event.results[0][0].transcript;
+
+    // Put text in input box
+    document.getElementById("user-input").value = transcript;
+
+    // Directly send message to chat
+    // sendMessage();
+  };
+
+  recognition.onerror = function(event) {
+    console.error("Speech recognition error:", event.error);
+  };
+}
     function sendMessage() {
       const input = document.getElementById("user-input");
       const chatBox = document.getElementById("chat-box");

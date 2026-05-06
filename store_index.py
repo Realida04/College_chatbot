@@ -35,7 +35,7 @@ if not pc.has_index(index_name):
         spec=ServerlessSpec(cloud="aws", region="us-east-1")
     )
 
-# LOAD INDEX
+
 index = pc.Index(index_name)
 
 # LOAD + PROCESS DOCUMENTS (ONLY ONCE)
@@ -62,7 +62,7 @@ chatModel = ChatOpenAI(
 system_prompt = (
     "You are a helpful assistant for answering questions about Aryan College. "
     "Use the provided context to answer the question. "
-    "If you don't know, say you don't know.\n\n"
+    "If you don't know, say I do not have sufficient information to answer that question.\n\n"
     "Context:\n{context}"
 )
 
@@ -76,9 +76,12 @@ prompt = ChatPromptTemplate.from_messages(
 # RETRIEVER
 retriever = docSearch.as_retriever(
     search_type="similarity",
-    search_kwargs={"k": 2}
+    search_kwargs={"k": 3}
 )
 
 # CHAINS
 question_answer_chain = create_stuff_documents_chain(chatModel, prompt)
 rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+
+docs = retriever.get_relevant_documents("Where is Aryan College located?")
+print("RETRIEVED DOCS:", docs)
