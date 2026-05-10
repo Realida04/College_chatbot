@@ -27,7 +27,8 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 index_name = "final-project"
 
 # CREATE INDEX (only if not exists)
-if not pc.has_index(index_name):
+if pc.has_index(index_name):
+    pc.delete_index(index_name)
     pc.create_index(
         name=index_name,
         dimension=384,
@@ -42,7 +43,7 @@ index = pc.Index(index_name)
 extracted_data = load_pdf_files("data")
 minimal_docs = filter_to_minimal_docs(extracted_data)
 texts_chunks = text_split(minimal_docs)
-
+print(minimal_docs[0].page_content)
 print(f"Loaded docs: {len(extracted_data)}")
 print(f"Chunks: {len(texts_chunks)}")
 
@@ -59,12 +60,24 @@ chatModel = ChatOpenAI(
 )
 
 # PROMPT
-system_prompt = (
-    "You are a helpful assistant for answering questions about Aryan College. "
-    "Use the provided context to answer the question. "
-    "If you don't know, say I do not have sufficient information to answer that question.\n\n"
-    "Context:\n{context}"
-)
+system_prompt = """
+You are a helpful assistant for answering questions about Aryan College.
+
+Use the provided context to answer the question naturally.
+
+If the user greets you, greet them back.
+
+If the question is unrelated to Aryan College,
+politely ask the user to ask questions related to Aryan College.
+
+If the answer is partially available, try to provide the best possible answer from the context.
+
+Only say "I do not have sufficient information"
+when the context truly does not contain the answer.
+
+Context:
+{context}
+"""
 
 prompt = ChatPromptTemplate.from_messages(
     [
@@ -76,12 +89,17 @@ prompt = ChatPromptTemplate.from_messages(
 # RETRIEVER
 retriever = docSearch.as_retriever(
     search_type="similarity",
-    search_kwargs={"k": 3}
+    search_kwargs={"k": 4}
 )
 
 # CHAINS
 question_answer_chain = create_stuff_documents_chain(chatModel, prompt)
 rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
-docs = retriever.get_relevant_documents("Where is Aryan College located?")
-print("RETRIEVED DOCS:", docs)
+docs = retriever.get_relevant_documents(
+    "Where is Aryan College located?"
+)
+
+for i, doc in enumerate(docs):
+    print(f"\n--- DOC {i+1} ---\n")
+    print(doc.page_content)
