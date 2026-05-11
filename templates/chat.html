@@ -4,87 +4,277 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>College Chatbot</title>
-  <link rel="stylesheet" href="static/style.css">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
   <div class="chat-container">
-    
+
+    <!-- HEADER -->
+
     <div class="chat-header">
-      <h2>ARYAN COLLEGE CHATBOT</h2>
-      <p>I can make mistake</p>
-      <p></p>
+
+      <div>
+        <h2>AI Assistant</h2>
+        <p>I can make mistake</p>
+      </div>
+
+      <!-- SETTINGS -->
+
+      <div class="setting">
+
+        <button class="setting-btn" onclick="toggleMenu()">
+
+          <img
+            src="{{ url_for('static', filename='setting.png') }}"
+            alt="setting"
+          >
+
+        </button>
+
+        <!-- DROPDOWN -->
+
+        <div class="setting-menu" id="settingMenu">
+
+          <button onclick="setTheme('dark')">
+            🌙 Dark Theme
+          </button>
+
+          <button onclick="setTheme('light')">
+            ☀️ Light Theme
+          </button>
+
+          <button onclick="setTheme('green')">
+            🟢 Green Theme
+          </button>
+
+          <button onclick="editName()">
+            ✏️ Edit Name
+          </button>
+
+          <button onclick="clearChat()">
+            🗑️ Clear Chat
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
+
+    <!-- CHAT BOX -->
 
     <div class="chat-box" id="chat-box">
-      <div class="bot-message">Hello! How can I assist you today?</div>
+
+      <div class="bot-message">
+        Hello! How can I assist you today?
+      </div>
+
     </div>
 
+    <!-- INPUT AREA -->
+
     <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Type your message...">
-      <button onClick = "voiceInput()" class="voice"><img src="{{ url_for('static', filename='mike.png') }}" alt="mic" height="25x" width="25px"></button>
-      <button onclick="sendMessage()" class="send">Send</button>
-      
+
+      <input
+        type="text"
+        id="user-input"
+        placeholder="Type your message..."
+      >
+
+      <!-- MIC BUTTON -->
+
+      <button onclick="voiceInput()" class="voice">
+
+        <img
+          src="{{ url_for('static', filename='mike.png') }}"
+          alt="mic"
+          width="22"
+          height="22"
+        >
+
+      </button>
+
+      <!-- SEND BUTTON -->
+
+      <button onclick="sendMessage()" class="send">
+        Send
+      </button>
+
     </div>
 
   </div>
 
+  <!-- JAVASCRIPT -->
+
   <script>
 
-    function voiceInput() {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = 'en-US';
+    function toggleMenu(){
 
-  recognition.start();
+      let menu =
+        document.getElementById("settingMenu");
 
-  recognition.onresult = function(event) {
-    const transcript = event.results[0][0].transcript;
+      if(menu.style.display === "block"){
 
-    // Put text in input box
-    document.getElementById("user-input").value = transcript;
+        menu.style.display = "none";
+      }
 
-    // Directly send message to chat
-    // sendMessage();
-  };
+      else{
 
-  recognition.onerror = function(event) {
-    console.error("Speech recognition error:", event.error);
-  };
-}
-    function sendMessage() {
-      const input = document.getElementById("user-input");
-      const chatBox = document.getElementById("chat-box");
+        menu.style.display = "block";
+      }
+    }
 
-      const message = input.value.trim();
-      if (message === "") return;
+    /* THEME */
 
-      // Show user message
-      const userMsg = document.createElement("div");
-      userMsg.className = "user-message";
-      userMsg.textContent = message;
+    function setTheme(theme){
+
+      if(theme === "dark"){
+
+        document.body.style.background =
+          "#1e1e1e";
+      }
+
+      else if(theme === "light"){
+
+        document.body.style.background =
+          "#ececec";
+      }
+
+      else if(theme === "green"){
+
+        document.body.style.background =
+          "#dff5e1";
+      }
+    }
+
+    /* EDIT NAME */
+
+    function editName(){
+
+      let newName =
+        prompt("Enter chatbot name:");
+
+      if(newName){
+
+        document.querySelector(
+          ".chat-header h2"
+        ).innerText = newName;
+      }
+    }
+
+    /* CLEAR CHAT */
+
+    function clearChat(){
+
+      let chatBox =
+        document.getElementById("chat-box");
+
+      chatBox.innerHTML = "";
+    }
+
+    /* VOICE INPUT */
+
+    function voiceInput(){
+
+      const recognition = new (
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition
+      )();
+
+      recognition.lang = "en-US";
+
+      recognition.start();
+
+      recognition.onresult = function(event){
+
+        const transcript =
+          event.results[0][0].transcript;
+
+        document.getElementById(
+          "user-input"
+        ).value = transcript;
+      };
+
+      recognition.onerror = function(event){
+
+        console.error(
+          "Speech recognition error:",
+          event.error
+        );
+      };
+    }
+
+    /* SEND MESSAGE */
+
+    function sendMessage(){
+
+      const input =
+        document.getElementById("user-input");
+
+      const chatBox =
+        document.getElementById("chat-box");
+
+      const message =
+        input.value.trim();
+
+      if(message === "") return;
+
+      /* USER MESSAGE */
+
+      const userMsg =
+        document.createElement("div");
+
+      userMsg.className =
+        "user-message";
+
+      userMsg.textContent =
+        message;
+
       chatBox.appendChild(userMsg);
 
-      // Send message to Flask backend
-      fetch("/chat", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ message: message })
-})
-.then(res => res.json())
-.then(data => {
-  const botMsg = document.createElement("div");
-  botMsg.className = "bot-message";
-  botMsg.textContent = data.response;
-  chatBox.appendChild(botMsg);
-})
-.catch(error => console.error(error));
+      /* SEND TO FLASK */
 
-      // Clear input AFTER sending
+      fetch("/chat",{
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          message:message
+        })
+
+      })
+
+      .then(res => res.json())
+
+      .then(data => {
+
+        const botMsg =
+          document.createElement("div");
+
+        botMsg.className =
+          "bot-message";
+
+        botMsg.textContent =
+          data.response;
+
+        chatBox.appendChild(botMsg);
+
+        chatBox.scrollTop =
+          chatBox.scrollHeight;
+      })
+
+      .catch(error => console.error(error));
+
       input.value = "";
-      chatBox.scrollTop = chatBox.scrollHeight;
     }
+
   </script>
 
 </body>
