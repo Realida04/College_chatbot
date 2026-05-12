@@ -38,7 +38,7 @@ def text_split(minimal_docs):
     text_splitter = RecursiveCharacterTextSplitter(
          separators=["\nQ:", "\n\n", "\n", " "],
         chunk_size=1500,
-        chunk_overlap=500
+        chunk_overlap=600
         )
     texts_chunks = text_splitter.split_documents(minimal_docs)
     return texts_chunks

@@ -69,6 +69,10 @@ If the user greets you, greet them back.
 
 If the user asks question related to college, say then to contact the college and provide them the phone number and email.
 
+If the user ask many question , reply in point or number format.
+
+instead of using the ** sign use points , bullets or numbers write all the points in new line like 1. new line then in another \n
+
 If the question is unrelated to Aryan College,
 politely ask the user to ask questions related to Aryan College.
 
@@ -88,13 +92,11 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-# RETRIEVER
 retriever = docSearch.as_retriever(
     search_type="similarity",
     search_kwargs={"k": 4}
 )
 
-# CHAINS
 question_answer_chain = create_stuff_documents_chain(chatModel, prompt)
 rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
